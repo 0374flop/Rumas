@@ -7,8 +7,8 @@ const TARGET_PORT = 8308; // Порт сервера
 const server = dgram.createSocket('udp4');
 
 // Чтобы помнить, куда отправлять ответы сервера — запишем адрес и порт ноутбука
-let clientAddress = null;
-let clientPort = null;
+let clientAddress = "10.198.235.122";
+let clientPort = 12345;
 
 server.on('message', (msg, rinfo) => {
   const isFromServer = (rinfo.address === TARGET_IP && rinfo.port === TARGET_PORT);
