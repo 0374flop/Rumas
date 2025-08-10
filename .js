@@ -11,19 +11,19 @@ let clientAddress = null;
 let clientPort = null;
 
 server.on('message', (msg, rinfo) => {
-  // Если пришло сообщение от клиента (ноутбука), пересылаем на сервер
-  if (rinfo.address !== TARGET_IP || rinfo.port !== TARGET_PORT) {
+  const isFromServer = (rinfo.address === TARGET_IP && rinfo.port === TARGET_PORT);
+  console.log(`Получено сообщение от ${rinfo.address}:${rinfo.port}, длина: ${msg.length} байт`);
+
+  if (!isFromServer) {
     clientAddress = rinfo.address;
     clientPort = rinfo.port;
-    console.log(`Получено сообщение от клиента ${clientAddress}:${clientPort}, пересылаем на сервер.`);
-
+    console.log(`От клиента, пересылаем на сервер ${TARGET_IP}:${TARGET_PORT}`);
     server.send(msg, TARGET_PORT, TARGET_IP, (err) => {
       if (err) console.error('Ошибка отправки на сервер:', err);
     });
   } else {
-    // Пришло сообщение от сервера — пересылаем обратно клиенту
     if (clientAddress && clientPort) {
-      console.log(`Получен ответ от сервера, пересылаем клиенту ${clientAddress}:${clientPort}`);
+      console.log(`От сервера, пересылаем клиенту ${clientAddress}:${clientPort}`);
       server.send(msg, clientPort, clientAddress, (err) => {
         if (err) console.error('Ошибка отправки клиенту:', err);
       });
