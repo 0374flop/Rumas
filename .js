@@ -1,22 +1,38 @@
 const dgram = require('dgram');
 
-const LISTEN_PORT = 12345; // Порт, где слушаем UDP
-const TARGET_IP = 'ТУТ_ВПИСЫВАЙ_IP_ТЕЛЕФОНА'; // IP телефона
-const TARGET_PORT = 12345; // Порт телефона, куда отправляем
+const PROXY_PORT = 12345; // Порт, на котором прокси слушает (телефон)
+const TARGET_IP = '45.141.57.31'; // IP сервера, куда пересылаем пакеты
+const TARGET_PORT = 8308; // Порт сервера
 
 const server = dgram.createSocket('udp4');
 
-server.on('message', (msg, rinfo) => {
-  console.log(`Получено сообщение от ${rinfo.address}:${rinfo.port} - ${msg.toString()}`);
+// Чтобы помнить, куда отправлять ответы сервера — запишем адрес и порт ноутбука
+let clientAddress = null;
+let clientPort = null;
 
-  // Пересылаем полученное сообщение на TARGET_IP:TARGET_PORT,
-  // независимо от адреса и порта отправителя
-  server.send(msg, TARGET_PORT, TARGET_IP, (err) => {
-    if (err) console.error('Ошибка при пересылке:', err);
-    else console.log(`Переслано на ${TARGET_IP}:${TARGET_PORT}`);
-  });
+server.on('message', (msg, rinfo) => {
+  // Если пришло сообщение от клиента (ноутбука), пересылаем на сервер
+  if (rinfo.address !== TARGET_IP || rinfo.port !== TARGET_PORT) {
+    clientAddress = rinfo.address;
+    clientPort = rinfo.port;
+    console.log(`Получено сообщение от клиента ${clientAddress}:${clientPort}, пересылаем на сервер.`);
+
+    server.send(msg, TARGET_PORT, TARGET_IP, (err) => {
+      if (err) console.error('Ошибка отправки на сервер:', err);
+    });
+  } else {
+    // Пришло сообщение от сервера — пересылаем обратно клиенту
+    if (clientAddress && clientPort) {
+      console.log(`Получен ответ от сервера, пересылаем клиенту ${clientAddress}:${clientPort}`);
+      server.send(msg, clientPort, clientAddress, (err) => {
+        if (err) console.error('Ошибка отправки клиенту:', err);
+      });
+    } else {
+      console.log('Неизвестный клиент, ответ от сервера игнорируем.');
+    }
+  }
 });
 
-server.bind(LISTEN_PORT, () => {
-  console.log(`UDP прокси слушает на порту ${LISTEN_PORT}`);
+server.bind(PROXY_PORT, () => {
+  console.log(`UDP прокси (двунаправленный) слушает на порту ${PROXY_PORT}`);
 });
