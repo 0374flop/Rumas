@@ -23,7 +23,7 @@ wss.on('connection', (ws) => {
   setTimeout(() => {
     ws.send('{ "vm_send": "exit" }')
     console.log('отправлен выход')
-    ws.send('{ "M_command": "disconnect"}')
+    ws.send('{ "M_command": "exit"}')
   }, 30000)
 });
 

@@ -27,7 +27,7 @@ function connectWebSocket() {
     ws.on('close', () => {
         const timereconnect = 60000;
         console.log('Соединение закрыто.');
-        console.log('переподключение через ' + timereconnect + 'ms.');
+        console.log('Переподключение через ' + timereconnect + 'ms.');
         setTimeout(connectWebSocket, timereconnect);
     });
 
