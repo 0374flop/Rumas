@@ -1,4 +1,4 @@
-const bot = require('./src/bot/index')
+const { bot } = require('./src/bot/index')
 
 
 
@@ -9,7 +9,7 @@ const bot = require('./src/bot/index')
 
 
 async function main() {
-    const botName = await bot.botCore.botManager.createAndConnectBot('45.141.57.22:8334', 'Towa', {
+    const botName = await bot.createAndConnectBot('45.141.57.22:8334', 'Towa', {
         identity: {
             name: "Towa",
             clan: "Towa Team",
@@ -24,7 +24,7 @@ async function main() {
 
     const lastMessages = new Map();
 
-    bot.botCore.botManager.on(`${botName}:message`, (msg) => {
+    bot.on(`${botName}:message`, (msg) => {
         if (!msg || typeof msg.message !== 'string') {
             return;
         }
@@ -55,8 +55,8 @@ async function main() {
         }, 10000);
     });
 
-	bot.botCore.botManager.on(`${botName}:connect`, () => {
-		const client = bot.botCore.botManager.getBotClient(botName);
+	bot.on(`${botName}:connect`, () => {
+		const client = bot.getBotClient(botName);
 		client.game.Say('PENIS')
 	})
 
