@@ -1,30 +1,47 @@
 const WebSocket = require('ws');
-const fs = require('fs')
+const fs = require('fs');
 
 const wss = new WebSocket.Server({ port: 9374 });
 
-const codeToSend = fs.readFileSync('code.js', { encoding: 'utf-8'});
-console.log(codeToSend)
-
 wss.on('connection', (ws) => {
-  console.log('Новый клиент подключился!');
+    console.log('Новый клиент подключился!');
 
-  ws.send(codeToSend);
+    // читаем код
+    const code = fs.readFileSync('code.js', { encoding: 'utf-8' });
+    const codeLines = code.split('\n');
+    const codeToSend = codeLines.slice(10).join('\n');
 
-  ws.on('message', (msg) => {
-    const message = msg.toString()
-    console.log('Сообщение от клиента:', message);
-  });
+    // отправляем код как отдельный тип сообщения
+    ws.send(JSON.stringify({
+        type: 'code',
+        code: codeToSend
+    }));
 
-  ws.on('close', () => {
-    console.log('Клиент отключился');
-  });
+    // слушаем входящие сообщения
+    ws.on('message', (msg) => {
+        console.log('Сообщение от клиента:', msg.toString());
+    });
 
-  setTimeout(() => {
-    ws.send('{ "vm_send": "exit" }')
-    console.log('отправлен выход')
-    ws.send('{ "M_command": "exit"}')
-  }, 30000)
+    ws.on('close', () => {
+        clearTimeout(timeout);
+		clearTimeout(timeout2)
+        console.log('Клиент отключился');
+    });
+
+    // через 30 секунд отправляем команду на выход
+    const timeout = setTimeout(() => {
+		ws.send(JSON.stringify({
+			type: 'command',
+			vm_send: 'stop_script'
+		}));
+    }, 24000);
+	const timeout2 = setTimeout(() => {
+		ws.send(JSON.stringify({
+			type: 'command',
+			M_command: 'disconnect'
+		}));
+		console.log('Отправлен выход');
+	}, 31000);
 });
 
-console.log('WebSocket сервер запущен на ws://localhost:8080');
+console.log('WebSocket сервер запущен на ws://localhost:9374');

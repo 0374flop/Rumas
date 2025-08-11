@@ -53,10 +53,41 @@ function createSandbox(ws) {
 }
 
 async function evalinsandbox(code, ws) {
+	console.log('код выполняеться')
     try {
         const sandbox = createSandbox(ws);
         const context = vm.createContext(sandbox)
-        const script = new vm.Script(`(async () => { ${code} })()`);
+        const script = new vm.Script(`
+            (async () => {
+                ${code}  // Пользовательский код выполняется первым
+
+                // Добавляем listener для удалённой остановки (ждёт бесконечно, пока не придёт команда)
+                await new Promise((resolve) => {
+                    if (typeof serverEvents !== 'undefined') {
+                        serverEvents.on('message', async (msg) => {
+                            try {
+                                const data = JSON.parse(msg);
+                                if (data.type === 'command' && data.vm_send === 'stop_script') {
+                                    console.log('Получена команда на остановку скрипта. Отключаем ботов...');
+                                    // Отключаем всех ботов graceful (если bot доступен и боты созданы)
+                                    if (bot && bot.botCore && bot.botCore.botManager) {
+                                        await bot.botCore.botManager.disconnectAllBots();
+                                    }
+                                    console.log('Боты отключены. Скрипт завершается.');
+                                    resolve();  // Завершаем промис, чтобы скрипт вышел
+                                }
+                            } catch (e) {
+                                // Игнорируем не-JSON или ошибки
+                                console.log('Ошибка в обработке сообщения для остановки:', e);
+                            }
+                        });
+                    } else {
+                        console.log('serverEvents не доступен для остановки!');
+                        resolve();  // Если нет serverEvents, просто продолжаем (fallback)
+                    }
+                });
+            })();
+        `);
         await script.runInContext(context);
     } catch (error) {
         console.log("ошибка выполнения кода : \n'\n" + error + "\n'")

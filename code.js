@@ -1,3 +1,13 @@
+const bot = require('./src/bot/index')
+
+
+
+
+
+
+
+
+
 async function main() {
     const botName = await bot.botCore.botManager.createAndConnectBot('45.141.57.22:8334', 'Towa', {
         identity: {
@@ -14,7 +24,7 @@ async function main() {
 
     const lastMessages = new Map();
 
-    bot.botCore.botManager.on('message', (msg) => {
+    bot.botCore.botManager.on(`${botName}:message`, (msg) => {
         if (!msg || typeof msg.message !== 'string') {
             return;
         }
@@ -45,24 +55,10 @@ async function main() {
         }, 10000);
     });
 
-    await new Promise((resolve) => {
-        if (typeof serverEvents !== 'undefined') {
-            serverEvents.on('message', async (msg) => {
-                try {
-                    const data = JSON.parse(msg);
-                    if (data.vm_send === 'exit') {
-                        await bot.botCore.botManager.disconnectAllBots();
-                        resolve();
-                    }
-                } catch {
-                    // не JSON — игнорируем
-                }
-            });
-        } else {
-            console.log("serverEvents не доступен в песочнице!");
-            resolve();
-        }
-    });
+	bot.botCore.botManager.on(`${botName}:connect`, () => {
+		const client = bot.botCore.botManager.getBotClient(botName);
+		client.game.Say('PENIS')
+	})
 
     return botName;
 }
