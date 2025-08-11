@@ -1,0 +1,25 @@
+{
+  "name": "rumas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0374flop/Rumas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/0374flop/Rumas/issues"
+  },
+  "homepage": "https://github.com/0374flop/Rumas#readme",
+  "dependencies": {
+    "neiky-ddracebot.js": "^2.4.0",
+    "ws": "^8.18.3"
+  }
+}
