@@ -32,6 +32,6 @@ async function main() {
     });
   
     return botName;
-  }
+}
   
 main();  

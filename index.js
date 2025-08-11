@@ -1,5 +1,5 @@
 const vm = require('vm');
-const bot = require('../ddbot.js/src/bot/index');
+const bot = require('./src/bot/index');
 const EventEmitter = require('events');
 
 function createSandbox(ws) {
