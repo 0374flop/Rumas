@@ -20,6 +20,7 @@
   "homepage": "https://github.com/0374flop/Rumas#readme",
   "dependencies": {
     "@ngrok/ngrok": "^1.5.2",
+    "express": "^5.1.0",
     "neiky-ddracebot.js": "^2.4.0",
     "ws": "^8.18.3"
   }

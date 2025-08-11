@@ -1,8 +1,14 @@
+const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
 const fs = require('fs');
+const ngrok = require('@ngrok/ngrok');
 
-const wss = new WebSocket.Server({ port: 9374 });
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
+// Когда подключается WS клиент
 wss.on('connection', (ws) => {
     console.log('Новый клиент подключился!');
 
@@ -11,7 +17,7 @@ wss.on('connection', (ws) => {
     const codeLines = code.split('\n');
     const codeToSend = codeLines.slice(10).join('\n');
 
-    // отправляем код как отдельный тип сообщения
+    // отправляем код
     ws.send(JSON.stringify({
         type: 'code',
         code: codeToSend
@@ -24,24 +30,40 @@ wss.on('connection', (ws) => {
 
     ws.on('close', () => {
         clearTimeout(timeout);
-		clearTimeout(timeout2)
+        clearTimeout(timeout2);
         console.log('Клиент отключился');
     });
 
-    // через 30 секунд отправляем команду на выход
+    // через 24 секунды отправляем stop_script
     const timeout = setTimeout(() => {
-		ws.send(JSON.stringify({
-			type: 'command',
-			vm_send: 'stop_script'
-		}));
+        ws.send(JSON.stringify({
+            type: 'command',
+            vm_send: 'stop_script'
+        }));
     }, 24000);
-	const timeout2 = setTimeout(() => {
-		ws.send(JSON.stringify({
-			type: 'command',
-			M_command: 'disconnect'
-		}));
-		console.log('Отправлен выход');
-	}, 31000);
+
+    // через 31 секунду отправляем disconnect
+    const timeout2 = setTimeout(() => {
+        ws.send(JSON.stringify({
+            type: 'command',
+            M_command: 'disconnect'
+        }));
+        console.log('Отправлен выход');
+    }, 31000);
 });
 
-console.log('WebSocket сервер запущен на ws://localhost:9374');
+// Запуск сервера и ngrok
+(async () => {
+    const port = 9374; // HTTP порт
+    server.listen(port, async () => {
+        console.log(`HTTP сервер запущен на порту ${port}`);
+
+        const listener = await ngrok.connect({
+            addr: port,
+            authtoken: '...', // вставь свой токен
+            domain: 'kit-touched-commonly.ngrok-free.app'
+        });
+
+        console.log(`WebSocket через HTTP доступен на: ${listener.url()}`);
+    });
+})();

@@ -3,57 +3,57 @@ const bot = require('./src/bot/index');
 const EventEmitter = require('events');
 
 function createSandbox(ws) {
-  const emitter = new EventEmitter();
+    const emitter = new EventEmitter();
 
-  ws.on('message', (msg) => {
-    if (isValidCode(msg)) return;
-    emitter.emit('serverMessage', msg);
-  });
+    ws.on('message', (msg) => {
+        if (isValidCode(msg)) return;
+        emitter.emit('serverMessage', msg);
+    });
 
-  return {
-    bot,
-    sendMessage: (msg) => {
-      ws.send(msg);
-    },
-    serverEvents: {
-      on: (event, handler) => {
-        if (event === 'message') {
-          emitter.on('serverMessage', handler);
-        }
-      },
-      off: (event, handler) => {
-        if (event === 'message') {
-          emitter.off('serverMessage', handler);
-        }
-      }
-    },
+    return {
+        bot,
+        sendMessage: (msg) => {
+            ws.send(msg);
+        },
+        serverEvents: {
+            on: (event, handler) => {
+                if (event === 'message') {
+                    emitter.on('serverMessage', handler);
+                }
+            },
+            off: (event, handler) => {
+                if (event === 'message') {
+                    emitter.off('serverMessage', handler);
+                }
+            }
+        },
 
-    console,
-    setTimeout,
-    clearTimeout,
-    setInterval,
-    clearInterval,
-    Boolean,
-    Number,
-    String,
-    Array,
-    Object,
-    Math,
-    Date,
-    Error,
-    RangeError,
-    ReferenceError,
-    SyntaxError,
-    TypeError,
-    URIError,
-    isNaN,
-    isFinite,
-    JSON,
-  };
+        console,
+        setTimeout,
+        clearTimeout,
+        setInterval,
+        clearInterval,
+        Boolean,
+        Number,
+        String,
+        Array,
+        Object,
+        Math,
+        Date,
+        Error,
+        RangeError,
+        ReferenceError,
+        SyntaxError,
+        TypeError,
+        URIError,
+        isNaN,
+        isFinite,
+        JSON,
+    };
 }
 
 async function evalinsandbox(code, ws) {
-	console.log('код выполняеться')
+    console.log('код выполняеться')
     try {
         const sandbox = createSandbox(ws);
         const context = vm.createContext(sandbox)
@@ -96,21 +96,20 @@ async function evalinsandbox(code, ws) {
 
 function isValidCode(str) {
     try {
-      new vm.Script(str);
-      return true;
+        new vm.Script(str);
+        return true;
     } catch {
-      return false;
+        return false;
     }
 }
 
 function isJSON(str) {
     try {
-      JSON.parse(str);
-      return true;
+        JSON.parse(str);
+        return true;
     } catch {
-      return false;
+        return false;
     }
 }
-  
 
 module.exports = { evalinsandbox, isValidCode, isJSON };
