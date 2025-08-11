@@ -1,5 +1,4 @@
 function log(message, level = 'info') {
-    const timestamp = new Date().toISOString();
     const logMessage = `[${level.toUpperCase()}] ${message}`;
     console.log(logMessage);
 }
