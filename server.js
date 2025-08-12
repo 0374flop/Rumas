@@ -60,7 +60,7 @@ wss.on('connection', (ws) => {
 
         const listener = await ngrok.connect({
             addr: port,
-            authtoken: '...', // вставь свой токен
+            authtoken: '2voueSqUUEHbhIdjYn5L7ksLwaI_52npeF5cExdeTZdEoeM86', // вставь свой токен
             domain: 'kit-touched-commonly.ngrok-free.app'
         });
 
