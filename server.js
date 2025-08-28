@@ -8,7 +8,6 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Когда подключается WS клиент
 wss.on('connection', (ws) => {
     console.log('Новый клиент подключился!');
 
@@ -25,24 +24,37 @@ wss.on('connection', (ws) => {
 
     // слушаем входящие сообщения
     ws.on('message', (msg) => {
-        console.log('Сообщение от клиента:', msg.toString());
+        console.log('Получено сообщение:', msg); // Логируем сырое сообщение для отладки
+        let jsonmsg;
+        try {
+            // Преобразуем Buffer в строку, если msg — это Buffer (часто встречается в библиотеке ws)
+            const message = msg.toString();
+            
+            // Проверяем, похоже ли сообщение на JSON (начинается с { или [)
+            if (message.startsWith('{') || message.startsWith('[')) {
+                jsonmsg = JSON.parse(message);
+                console.log('Разобранный JSON:', jsonmsg);
+    
+                if (jsonmsg.type === 'ingamemessage') {
+                    console.log('Игровое сообщение:', jsonmsg.message);
+                } else if (jsonmsg.type === 'ingameconnection') {
+                    console.log('Один из ботов подключился');
+                } else {
+                    console.log('Неизвестный тип JSON-сообщения:', jsonmsg);
+                }
+            } else {
+                console.log('Получено не-JSON сообщение:', message);
+            }
+        } catch (e) {
+            console.error('Ошибка при разборе сообщения:', e.message, 'Сырое сообщение:', msg.toString());
+        }
     });
 
     ws.on('close', () => {
-        clearTimeout(timeout);
         clearTimeout(timeout2);
         console.log('Клиент отключился');
     });
 
-    // через 24 секунды отправляем stop_script
-    const timeout = setTimeout(() => {
-        ws.send(JSON.stringify({
-            type: 'command',
-            vm_send: 'stop_script'
-        }));
-    }, 24000);
-
-    // через 31 секунду отправляем disconnect
     const timeout2 = setTimeout(() => {
         ws.send(JSON.stringify({
             type: 'command',
@@ -52,15 +64,14 @@ wss.on('connection', (ws) => {
     }, 31000);
 });
 
-// Запуск сервера и ngrok
 (async () => {
-    const port = 9374; // HTTP порт
+    const port = 9374;
     server.listen(port, async () => {
         console.log(`HTTP сервер запущен на порту ${port}`);
 
         const listener = await ngrok.connect({
             addr: port,
-            authtoken: '2voueSqUUEHbhIdjYn5L7ksLwaI_52npeF5cExdeTZdEoeM86', // вставь свой токен
+            authtoken: '2voueSqUUEHbhIdjYn5L7ksLwaI_52npeF5cExdeTZdEoeM86',
             domain: 'kit-touched-commonly.ngrok-free.app'
         });
 

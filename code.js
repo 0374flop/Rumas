@@ -8,7 +8,7 @@ const bot = require('./src/bot/index')
 
 
 
-bot.botCore.botManager.createAndConnectBot('45.141.57.31:8308', 'Towa', {
+bot.createAndConnectBot('45.141.57.31:8308', 'Towa', {
     identity: {
         name: "Towa",
         clan: "Towa Team",
@@ -24,7 +24,7 @@ const botName = "Towa1"
 
 const lastMessages = new Map();
 
-bot.botCore.botManager.on(`${botName}:message`, (msg) => {
+bot.on(`${botName}:message`, (msg) => {
     if (!msg || typeof msg.message !== 'string') {
         return;
     }
@@ -44,7 +44,14 @@ bot.botCore.botManager.on(`${botName}:message`, (msg) => {
 
     const utilisateur = msg.utilisateur?.InformationDuBot;
     let autormsg = utilisateur?.name || "system";
-    console.log(`'${autormsg}' : ${text}`);
+    const trueMessage = `'${autormsg}' : ${text}`; 
+    const jsonMessage = JSON.stringify({
+        type: 'ingamemessage',
+        msg: msg,
+        message: trueMessage
+    })
+    console.log(trueMessage);
+    sendMessage(jsonMessage);
 
     setTimeout(() => {
         for (const [k, v] of lastMessages) {
@@ -55,10 +62,8 @@ bot.botCore.botManager.on(`${botName}:message`, (msg) => {
     }, 10000);
 });
 
-bot.botCore.botManager.on(`${botName}:connect`, () => {
-    console.log('mama matelia')
+bot.on(`${botName}:connect`, () => {
+    sendMessage(JSON.stringify({
+        type: 'ingameconnection'
+    }));
 });
-
-setTimeout(() => {
-    bot.botCore.botManager.disconnectAllBots();
-}, 25000)
