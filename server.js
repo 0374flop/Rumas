@@ -8,6 +8,16 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const kickbots = {
+    "type": "command",
+    "vm_send": "stop_script"
+}  
+
+const disconnectclient = {
+    type: 'command',
+    M_command: 'disconnect'
+}
+
 wss.on('connection', (ws) => {
     console.log('Новый клиент подключился!');
 
@@ -24,7 +34,6 @@ wss.on('connection', (ws) => {
 
     // слушаем входящие сообщения
     ws.on('message', (msg) => {
-        console.log('Получено сообщение:', msg); // Логируем сырое сообщение для отладки
         let jsonmsg;
         try {
             // Преобразуем Buffer в строку, если msg — это Buffer (часто встречается в библиотеке ws)
@@ -33,17 +42,15 @@ wss.on('connection', (ws) => {
             // Проверяем, похоже ли сообщение на JSON (начинается с { или [)
             if (message.startsWith('{') || message.startsWith('[')) {
                 jsonmsg = JSON.parse(message);
-                console.log('Разобранный JSON:', jsonmsg);
-    
                 if (jsonmsg.type === 'ingamemessage') {
                     console.log('Игровое сообщение:', jsonmsg.message);
                 } else if (jsonmsg.type === 'ingameconnection') {
                     console.log('Один из ботов подключился');
+                } else if (jsonmsg.type === 'ingamedisconnection') {
+                    console.log('Один из ботов одключился ' + jsonmsg.reason);
                 } else {
                     console.log('Неизвестный тип JSON-сообщения:', jsonmsg);
                 }
-            } else {
-                console.log('Получено не-JSON сообщение:', message);
             }
         } catch (e) {
             console.error('Ошибка при разборе сообщения:', e.message, 'Сырое сообщение:', msg.toString());
@@ -51,17 +58,25 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        clearTimeout(timeout2);
+        /* clearTimeout(timeout2);
+        clearTimeout(timeout1); */
         console.log('Клиент отключился');
     });
 
-    const timeout2 = setTimeout(() => {
-        ws.send(JSON.stringify({
-            type: 'command',
-            M_command: 'disconnect'
-        }));
+    /* const timeout1 = setTimeout(() => {
+        ws.send(JSON.stringify( kickbots ));
+        console.log('Отправлен выход ботов');
+    }, 36000); */
+
+    process.on('SIGINT', () => {
+        ws.send(JSON.stringify( kickbots ));
+        process.exit(0)
+    });
+
+    /* const timeout2 = setTimeout(() => {
+        ws.send(JSON.stringify( disconnectclient ));
         console.log('Отправлен выход');
-    }, 31000);
+    }, 36000); */
 });
 
 (async () => {

@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const { evalinsandbox, isValidCode, isJSON } = require('./index');
+const { bot } = require('./src/bot');
 
 let timereconnect = 6000;
 
@@ -12,12 +13,9 @@ function connectWebSocket() {
 
     ws.on('message', (message) => {
         const str = message.toString();
-
         if (!isJSON(str)) return;
 
         const data = JSON.parse(str);
-
-        // чётко разделяем типы сообщений
         if (data.type === 'code') {
             const code = data.code;
             if (code && isValidCode(code)) {
@@ -28,9 +26,9 @@ function connectWebSocket() {
         } 
         else if (data.type === 'command') {
             if (data.M_command === 'exit') {
-                ws.send('exit code 0.');
+                ws.send('exit.');
                 ws.close(1000);
-                process.exit(0);
+                exit(0);
             } else if (data.M_command === 'disconnect') {
                 ws.send('close.');
                 ws.close(1000);
@@ -43,6 +41,7 @@ function connectWebSocket() {
     ws.on('close', () => {
         console.log('Соединение закрыто.');
         console.log('Переподключение через ' + timereconnect + 'ms.');
+        ws.removeAllListeners();
         setTimeout(connectWebSocket, timereconnect);
     });
 
@@ -52,3 +51,11 @@ function connectWebSocket() {
 }
 
 connectWebSocket();
+
+async function exit(code = 0) {
+    await bot.disconnectAllBots();
+    process.exit(code);
+}
+process.on('SIGINT', () => {
+    exit()
+});

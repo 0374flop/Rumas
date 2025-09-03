@@ -256,17 +256,22 @@ class BotManager extends EventEmitter {
                 const ddnetChar = client.SnapshotUnpacker.getObjExDDNetCharacter
                     ? client.SnapshotUnpacker.getObjExDDNetCharacter(client_id)
                     : null;
+            
                 if (clientInfo && clientInfo.name && playerInfo && playerInfo.m_Team !== -1) {
                     playerList.push({
                         client_id,
-                        name: clientInfo.name,
-                        clan: clientInfo.clan || '',
-                        country: clientInfo.country || -1,
-                        team: playerInfo.m_Team
+                        name: clientInfo.name, // имя
+                        clan: clientInfo.clan || '', // клан
+                        country: clientInfo.country || -1, // страна
+                        team: playerInfo.m_Team, // тима
+                        skin: clientInfo.skin || 'default', // имя скина игрока
+                        x: ddnetChar ? ddnetChar.m_X : null, // координата X
+                        y: ddnetChar ? ddnetChar.m_Y : null  // координата Y
                     });
                 }
             }
-            this.playerLists.set(botName, playerList);
+            
+            this.playerLists.set(botName, playerList);            
 
             this.emit(`${botName}:snapshot`, snapshot);
         });
