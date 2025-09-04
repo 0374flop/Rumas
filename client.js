@@ -41,6 +41,7 @@ function connectWebSocket() {
     ws.on('close', () => {
         console.log('Соединение закрыто.');
         console.log('Переподключение через ' + timereconnect + 'ms.');
+        bot.disconnectAllBots();
         ws.removeAllListeners();
         setTimeout(connectWebSocket, timereconnect);
     });
