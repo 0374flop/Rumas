@@ -22,14 +22,16 @@ wss.on('connection', (ws) => {
     console.log('Новый клиент подключился!');
 
     // читаем код
-    const code = fs.readFileSync('code.js', { encoding: 'utf-8' });
+    const servers = JSON.parse(fs.readFileSync('servers.json', { encoding: 'utf-8' }));
+    const code = fs.readFileSync('code copy.js', { encoding: 'utf-8' });
     const codeLines = code.split('\n');
     const codeToSend = codeLines.slice(10).join('\n');
 
     // отправляем код
     ws.send(JSON.stringify({
         type: 'code',
-        code: codeToSend
+        code: codeToSend,
+        servers: servers
     }));
 
     // слушаем входящие сообщения

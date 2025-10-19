@@ -55,7 +55,7 @@ function createSandbox(ws, resolveExit) {
     };
 }
 
-async function evalinsandbox(code, ws) {
+async function evalinsandbox(code, ws, servers) {
     console.log('код выполняется');
     try {
         let resolveExit;
@@ -66,6 +66,7 @@ async function evalinsandbox(code, ws) {
 
         const script = new vm.Script(`
             (async () => {
+                const servers = ${JSON.stringify(servers)};
                 ${code}  // пользовательский код
                 await new Promise(() => {}); // бесконечно ждём, пока не вызовут exit()
             })();

@@ -4,8 +4,8 @@ const { bot } = require('./src/bot');
 
 let timereconnect = 6000;
 
-function connectWebSocket() {
-    const ws = new WebSocket('wss://kit-touched-commonly.ngrok-free.app');
+function connectWebSocket(server) {
+    const ws = new WebSocket(server);
 
     ws.on('open', () => {
         console.log('Подключено.');
@@ -19,7 +19,7 @@ function connectWebSocket() {
         if (data.type === 'code') {
             const code = data.code;
             if (code && isValidCode(code)) {
-                evalinsandbox(code, ws);
+                evalinsandbox(code, ws, data.servers);
             } else {
                 console.log('code is not valid');
             }
@@ -46,12 +46,14 @@ function connectWebSocket() {
         setTimeout(connectWebSocket, timereconnect);
     });
 
-    ws.on('error', () => {
+    ws.on('error', (e) => {
+        console.error('Ошибка WebSocket:', e.message);
         ws.close();
     });
 }
-
-connectWebSocket();
+const server = 'wss://kit-touched-commonly.ngrok-free.app'
+const localserver = 'ws://localhost:9374';
+connectWebSocket(localserver);
 
 async function exit(code = 0) {
     await bot.disconnectAllBots();
