@@ -2,7 +2,7 @@
   "name": "rumas",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/0374flop/Rumas.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "0374flop",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
@@ -19,10 +19,9 @@
   },
   "homepage": "https://github.com/0374flop/Rumas#readme",
   "dependencies": {
+    "ddbot": "file:./lib/ddbot",
     "@ngrok/ngrok": "^1.5.2",
-    "express": "^5.1.0",
     "neiky-ddracebot.js": "^2.4.0",
-    "pkg": "^5.8.1",
     "ws": "^8.18.3"
   }
 }
