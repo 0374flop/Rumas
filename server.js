@@ -21,7 +21,7 @@ const disconnectclient = {
 wss.on('connection', (ws) => {
     console.log('Новый клиент подключился!');
 
-    // читаем код
+    // читаем код и серверы из файлов
     const servers = JSON.parse(fs.readFileSync('servers.json', { encoding: 'utf-8' }));
     const code = fs.readFileSync('code copy.js', { encoding: 'utf-8' });
     const codeLines = code.split('\n');

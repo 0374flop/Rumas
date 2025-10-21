@@ -19,8 +19,9 @@
   },
   "homepage": "https://github.com/0374flop/Rumas#readme",
   "dependencies": {
-    "ddbot": "file:./lib/ddbot",
     "@ngrok/ngrok": "^1.5.2",
+    "ddbot": "file:./lib/ddbot",
+    "express": "^5.1.0",
     "neiky-ddracebot.js": "^2.4.0",
     "ws": "^8.18.3"
   }

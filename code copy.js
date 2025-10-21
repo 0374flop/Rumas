@@ -1,4 +1,4 @@
-const bot = require('./src/bot/index');
+const bot = require('ddbot');
 
 
 
@@ -8,6 +8,7 @@ const bot = require('./src/bot/index');
 
 
 
+bot.setDebugMode(false);
 const identitybot = {
     name: "Towa",
     clan: "Towa Team",
@@ -21,7 +22,9 @@ const identitybot = {
 async function connectToServer(serverIp) {
     const botName = await bot.createAndConnectBot(serverIp, identitybot.name, {
         identity: identitybot,
-        reconnect: true
+        reconnect: true,
+        reconnectAttempts: -1,
+        randreconnect: true
     });
     const botClient = bot.getBotClient(botName);
 
@@ -50,13 +53,9 @@ async function connectToServer(serverIp) {
         let intervalnameset = startnameset();
 
         // Чат
-        bot.on(`${botName}:message`, (msg) => {
-            if (!msg || typeof msg.message !== 'string') return;
-            const text = msg.message.trim();
-            const client_id = msg.client_id;
-            let autormsg = msg.utilisateur?.InformationDuBot?.name || "system";
+        bot.on(`${botName}:ChatNoSystem`, (msg, autormsg, text, team, client_id) => {
 
-            console.log(`'${autormsg}' : ${text}`);
+            console.log(`${client_id} ${team} '${autormsg}' : ${text}`);
 
             if (text.includes(identitybot.name)) {
                 if (text.includes('%syncE')) {
@@ -64,7 +63,7 @@ async function connectToServer(serverIp) {
                     clearInterval(intervalemote);
                     intervalemote = startemote();
                 }
-                if (text.includes('%exit')) process.exit();
+                if (text.includes('%exit')) bot.disconnectBot(botName);
             }
         });
 
@@ -108,7 +107,6 @@ async function connectToServer(serverIp) {
     });
 }
 
-// **Автоматическое подключение ко всем серверам**
 async function main() {
     console.log('Main started');
     servers.forEach(server => connectToServer(server));

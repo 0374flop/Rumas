@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { evalinsandbox, isValidCode, isJSON } = require('./index');
-const { bot } = require('./src/bot');
+const { bot } = require('ddbot');
 
 let timereconnect = 6000;
 
