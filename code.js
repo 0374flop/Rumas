@@ -1,4 +1,4 @@
-const bot = require('./src/bot/index')
+const { bot } = require('ddbot.js-0374')
 
 
 

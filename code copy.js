@@ -1,4 +1,4 @@
-const bot = require('ddbot');
+const ddbot = require('ddbot.js-0374');
 
 
 
@@ -8,7 +8,11 @@ const bot = require('ddbot');
 
 
 
-bot.setDebugMode(false);
+
+
+ddbot.botClassAndLoger.logDebuger.setDebugMode(true);
+const bot = ddbot.bot;
+
 const identitybot = {
     name: "Towa",
     clan: "Towa Team",
@@ -20,13 +24,14 @@ const identitybot = {
 };
 
 async function connectToServer(serverIp) {
-    const botName = await bot.createAndConnectBot(serverIp, identitybot.name, {
+    const botName = await bot.createBot(serverIp, identitybot.name, {
         identity: identitybot,
         reconnect: true,
         reconnectAttempts: -1,
         randreconnect: true
     });
     const botClient = bot.getBotClient(botName);
+    bot.connectBot(botName);
 
     bot.on(`${botName}:connect`, () => {
         console.log(`${botName} connected to ${serverIp}`);

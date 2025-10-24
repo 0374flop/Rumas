@@ -1,5 +1,5 @@
 const vm = require('vm');
-const { bot } = require('ddbot');
+const ddbot = require('ddbot.js-0374');
 const EventEmitter = require('events');
 
 function createSandbox(ws, resolveExit) {
@@ -11,7 +11,7 @@ function createSandbox(ws, resolveExit) {
     });
 
     return {
-        bot,
+        ddbot,
         sendMessage: (msg) => {
             ws.send(msg);
         },
