@@ -6,6 +6,8 @@ const bot = new botClassAndLoger.BotManager(teeworlds);
 const DebugLogger = require('Loger0374');
 const readline = require('readline');
 
+bot.getlogDebuger().setDebugMode(true, true, true);
+
 // Создаем интерфейс для ввода с консоли
 const rl = readline.createInterface({
     input: process.stdin,
