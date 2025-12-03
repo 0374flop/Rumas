@@ -1,4 +1,6 @@
-const teeworlds = require('./server');
+const ROI = require('./ROI');
+const tw = require('teeworlds');
+const teeworlds = new ROI(tw);
 
 const { botClassAndLoger } = require('ddbot.js-0374');
 
@@ -36,7 +38,7 @@ async function main() {
         country: 804
     };
 
-    const botName = await bot.createBot('26.230.124.233:8303', 'Towa', {
+    const botName = await bot.createBot('45.141.57.22:8314', 'Towa', {
         identity: identitybot,
         reconnect: true,
         reconnectAttempts: -1,
