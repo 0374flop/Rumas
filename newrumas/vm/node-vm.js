@@ -51,7 +51,7 @@ function offvm() {
     sandbox1.exitforvm('Вышел принудительно');
 }
 
-async function evalinsandbox(code, timeout = 5000, send, on) {
+async function evalinsandbox(code, timeout = 5000, send, on, data) {
     
     try {
         sandbox1 = init(send, on, (message) => {
@@ -69,6 +69,7 @@ async function evalinsandbox(code, timeout = 5000, send, on) {
 
         const script = new vm.Script(`
             'use strict';
+            const CData = ${data}
             (async () => {
                 try {
                     ${code}

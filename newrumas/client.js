@@ -39,7 +39,7 @@ function connect(url) {
                 console.log(`Мой ID: ${myClientId}`);
             } if (message.type === 'code') {
                 console.log('Получен код');
-                const result = await vmeval(message.codetext, 100000, safeSend, onSandbox);
+                const result = await vmeval(message.codetext, 100000, safeSend, onSandbox, message.data4code);
                 console.log("Код выполнен:", result?.result || result?.error || 'ошибка или без вывода');
             }
         } catch (e) {

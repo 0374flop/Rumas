@@ -8,7 +8,7 @@ const code = fs.readFileSync(path.join(__dirname, 'codetosend', 'controlbot.js')
 const server = new Rumas.Server(1242, true);
 
 server.on('connect', (clientId) => {
-    server.sendCode(clientId, code);
+    server.sendCode(clientId, code, { adresss: ''});
 
     const sendInput = (input) => {
         server.sendToClient(clientId, JSON.stringify({

@@ -60,10 +60,11 @@ class RServer extends EventEmiter{
         return [...this.clients.keys()]
     }
 
-    sendCode(clientId, code) {
+    sendCode(clientId, code, data) {
         this.sendToClient(clientId, JSON.stringify({
             type: 'code',
-            codetext: code
+            codetext: code,
+            data4code: data
         }))
     }
 }
