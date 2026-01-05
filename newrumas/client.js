@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const vm = require('./vm/vm');
-const vmeval = vm.quickjsvm.evalinsandbox;
+const vmeval = vm.nodevm.evalinsandbox;
 
 let socket = null;
 let myClientId = null;
@@ -8,6 +8,19 @@ let reconnectInterval = 5000;
 
 function connect(url) {
     socket = new WebSocket(url);
+    const onSandbox = (handler) => {
+        socket.on('message', (data) => {
+            try {
+                handler(data.toString());
+            } catch (e) {
+                console.error('sandbox handler error:', e);
+            }
+        });
+    };
+    function safeSend(...args) {
+        return sendMessage(...args); // простое перенаправление, без this
+    }
+
 
     socket.on('open', () => {
         console.log('Подключено к серверу!');
@@ -24,7 +37,7 @@ function connect(url) {
                 console.log(`Мой ID: ${myClientId}`);
             } if (message.type === 'code') {
                 console.log('Получен код');
-                const result = await vmeval(message.codetext, 100000, sendMessage);
+                const result = await vmeval(message.codetext, 100000, safeSend, onSandbox);
                 console.log("Код выполнен:", result.result || result.error);
             }
         } catch (e) {
@@ -40,7 +53,7 @@ function connect(url) {
     socket.on('close', () => {
         console.log(`Соединение закрыто. Переподключение через ${reconnectInterval} милисек...`);
         myClientId = null; // Сбрасываем ID при отключении
-        setTimeout(connect(url), reconnectInterval);
+        setTimeout(() => {connect(url)}, reconnectInterval);
     });
 }
 

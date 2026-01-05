@@ -1,11 +1,13 @@
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const http = require('http');
+const EventEmiter = require('events')
 
 const { ngrok } = require('./ngrok');
 
-class RServer {
+class RServer extends EventEmiter{
     constructor(port, usengrok = false) {
+        super()
         const server = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end('WebSocket сервер работает');
@@ -26,13 +28,14 @@ class RServer {
                 console.log(`Сообщение от ${clientId}:`, data.toString());
             });
             socket.on('close', () => {
-                clients.delete(clientId);
+                this.clients.delete(clientId);
                 console.log(`Клиент отключился: ${clientId}`);
                 console.log(`Осталось клиентов: ${this.clients.size}`);
             });
             socket.on('error', () => {
-                clients.delete(clientId);
+                this.clients.delete(clientId);
             });
+            this.emit('connect', clientId);
         });
 
         if (usengrok) this.ngrok = new ngrok(port, undefined, undefined, server);
@@ -54,7 +57,14 @@ class RServer {
     }
 
     get allclients() {
-        return [...clients.keys()]
+        return [...this.clients.keys()]
+    }
+
+    sendCode(clientId, code) {
+        this.sendToClient(clientId, JSON.stringify({
+            type: 'code',
+            codetext: code
+        }))
     }
 }
 

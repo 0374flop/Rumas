@@ -12,15 +12,9 @@ function init(send, on) {
         warn: (...args) => console.warn('[SANDBOX]', ...args),
     };
 
-    sandbox.send = (...args) => {
-        const cloned = structuredClone(args);
-        return send(...cloned);
-    };
+    sandbox.send = send;
 
-    sandbox.on = (...args) => {
-        const cloned = structuredClone(args);
-        return on(...cloned);
-    };
+    sandbox.on = on;
 
     sandbox.Obj = Obj;
     

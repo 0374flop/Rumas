@@ -19,7 +19,7 @@ class ngrok {
             });
 
             this.urlhttp = listener.url();
-            this.urlws = url.replace('https://', 'wss://').replace('http://', 'ws://');
+            this.urlws = this.urlhttp.replace('https://', 'wss://').replace('http://', 'ws://');
             
             console.log(`HTTP доступен на: ${this.urlhttp}`);
             console.log(`WebSocket доступен на: ${this.urlws}`);

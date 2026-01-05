@@ -18,37 +18,38 @@ async function init(send, on) {
 			memoryLimitBytes: 50 * 1024 * 1024, // 50 МБ лимит памяти
 		});
 
-		function createProxy(obj) {
-			if (typeof obj === 'function') {
-				const isAsync = obj.constructor.name === 'AsyncFunction' || String(obj).includes('async');
+function createProxy(obj) {
+    if (typeof obj === 'function') {
+        const isAsync = obj.constructor.name === 'AsyncFunction' || String(obj).includes('async');
+        if (isAsync) {
+            return vm.newAsyncFunction(obj.name || 'fn', async (...args) => {
+                const hostArgs = args.map(vm.dump);
+                const result = await obj(...hostArgs);
+                return vm.dump(result); // только результат, а не функция
+            });
+        } else {
+            return vm.newFunction(obj.name || 'fn', (...args) => {
+                const hostArgs = args.map(vm.dump);
+                const result = obj(...hostArgs);
+                return vm.dump(result);
+            });
+        }
+    }
 
-				if (isAsync) {
-					return vm.newAsyncFunction(obj.name || 'fn', async (...args) => {
-						const hostArgs = args.map(vm.dump);
-						const result = await obj(...hostArgs);
-						return QuickJS.dumpToHandle(vm, result);
-					});
-				} else {
-					return vm.newFunction(obj.name || 'fn', (...args) => {
-						const hostArgs = args.map(vm.dump);
-						const result = obj(...hostArgs);
-						return QuickJS.dumpToHandle(vm, result);
-					});
-				}
-			}
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        const proxyObj = vm.newObject();
+        for (const [key, value] of Object.entries(obj)) {
+            const proxyValue = createProxy(value);
+            vm.setProp(proxyObj, key, proxyValue);
+            if (proxyValue && typeof proxyValue.dispose === 'function') proxyValue.dispose();
+        }
+        return proxyObj;
+    }
 
-			if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
-				const proxyObj = vm.newObject();
-				for (const [key, value] of Object.entries(obj)) {
-					const proxyValue = createProxy(value);
-					vm.setProp(proxyObj, key, proxyValue);
-					proxyValue.dispose();
-				}
-				return proxyObj;
-			}
+    // Примитивы
+    return vm.dump(obj);
+}
 
-			return QuickJS.dumpToHandle(vm, obj);
-		}
 
 		objProxy = createProxy(obj);
 		vm.setProp(vm.global, 'obj', objProxy);
@@ -108,3 +109,7 @@ process.on('exit', () => {
 });
 
 module.exports = { evalinsandbox };
+
+
+
+// да в жопу засунь свой куик жс(кал жс) я лутше буду пользоваться православным ноде вм. и что что не безопасно. я всеравно не даю никому ключ от нгрока. даже если и узнают, не все знают на чем запущено.
