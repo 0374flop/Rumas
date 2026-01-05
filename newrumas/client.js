@@ -2,13 +2,12 @@ const WebSocket = require('ws');
 const vm = require('./vm/vm');
 const vmeval = vm.quickjsvm.evalinsandbox;
 
-let wsUrl = 'wss://kit-touched-commonly.ngrok-free.app';
 let socket = null;
 let myClientId = null;
 let reconnectInterval = 5000;
 
-function connect() {
-    socket = new WebSocket(wsUrl);
+function connect(url) {
+    socket = new WebSocket(url);
 
     socket.on('open', () => {
         console.log('Подключено к серверу!');
@@ -41,7 +40,7 @@ function connect() {
     socket.on('close', () => {
         console.log(`Соединение закрыто. Переподключение через ${reconnectInterval} милисек...`);
         myClientId = null; // Сбрасываем ID при отключении
-        setTimeout(connect, reconnectInterval);
+        setTimeout(connect(url), reconnectInterval);
     });
 }
 

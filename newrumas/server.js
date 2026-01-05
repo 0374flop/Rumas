@@ -4,13 +4,6 @@ const http = require('http');
 
 const { ngrok } = require('./ngrok');
 
-
-module.exports = {
-    broadcast,
-    sendToClient,
-    getallclients
-}
-
 class RServer {
     constructor(port, usengrok = false) {
         const server = http.createServer((req, res) => {
@@ -63,4 +56,8 @@ class RServer {
     get allclients() {
         return [...clients.keys()]
     }
+}
+
+module.exports = {
+    RServer
 }
