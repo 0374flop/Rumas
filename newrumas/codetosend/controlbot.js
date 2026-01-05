@@ -12,7 +12,7 @@ async function main() {
         country: 804
     };
 
-    const botName = await Obj.bot.bot.createBot(Cdata.adrsess, 'Towa', {
+    const botName = await Obj.bot.bot.createBot(CData.adrsess, 'Towa', {
         identity: identitybot,
         reconnect: true,
         reconnectAttempts: -1,

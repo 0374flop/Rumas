@@ -69,9 +69,9 @@ async function evalinsandbox(code, timeout = 5000, send, on, data) {
 
         const script = new vm.Script(`
             'use strict';
-            const CData = ${data}
             (async () => {
                 try {
+                    const CData = ${data}
                     ${code}
                 } catch(e) {
                     if(e.message.startsWith('__EXIT MSG:')) {
