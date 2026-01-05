@@ -46,12 +46,14 @@ async function main() {
     async function exit() {
         await bot.bot.disconnectAllBots(); // отключаем всех ботов
         Obj.bot.bot.removeAllListeners();
+        exitforvm()
     }
 
     on((message) => {
         try {
             const msg = JSON.parse(message);
-            if (msg.type === 'exitbot') exit()
+            if (msg.type === 'exitbot') exit();
+            if (msg.input) botClient.movement.input = msg.input;
         } catch {
             console.log('aaaAAaaAa');
         }

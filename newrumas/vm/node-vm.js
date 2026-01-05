@@ -1,7 +1,7 @@
 const vm = require('vm');
 const Obj = require('./Obj');
 
-function init(send, on) {
+function init(send, on, exit) {
     // Создаем полностью пустой объект без прототипа
     const sandbox = Object.create(null);
     
@@ -15,6 +15,8 @@ function init(send, on) {
     sandbox.send = send;
 
     sandbox.on = on;
+
+    sandbox.exitforvm = exit;
 
     sandbox.Obj = Obj;
     
@@ -43,13 +45,21 @@ function init(send, on) {
     return sandbox;
 }
 
+let sandbox1;
+
+function offvm() {
+    sandbox1.exitforvm('Вышел принудительно');
+}
+
 async function evalinsandbox(code, timeout = 5000, send, on) {
     
     try {
-        const sandbox = init(send, on);
+        sandbox1 = init(send, on, (message) => {
+            throw new Error(`__EXIT MSG: ${message}__`)
+        });
         
         // Создаем контекст с отключенной генерацией кода
-        const context = vm.createContext(sandbox, {
+        const context = vm.createContext(sandbox1, {
             name: 'SecureSandbox',
             codeGeneration: {
                 strings: false,  // Блокируем eval()
@@ -59,8 +69,16 @@ async function evalinsandbox(code, timeout = 5000, send, on) {
 
         const script = new vm.Script(`
             'use strict';
-            (() => {
-                ${code}
+            (async () => {
+                try {
+                    ${code}
+                } catch(e) {
+                    if(e.message.startsWith('__EXIT MSG:')) {
+                        try {exit();} catch {}
+                        return;
+                    }
+                    throw e;
+                }
             })();
         `, {
             filename: 'sandbox.js',
@@ -86,4 +104,4 @@ async function evalinsandbox(code, timeout = 5000, send, on) {
     }
 }
 
-module.exports = { evalinsandbox };
+module.exports = { evalinsandbox, offvm };

@@ -1,6 +1,8 @@
 const WebSocket = require('ws');
 const vm = require('./vm/vm');
+const { offvm } = require('./vm/node-vm');
 const vmeval = vm.nodevm.evalinsandbox;
+const vmoff = vm.nodevm.offvm;
 
 let socket = null;
 let myClientId = null;
@@ -18,7 +20,7 @@ function connect(url) {
         });
     };
     function safeSend(...args) {
-        return sendMessage(...args); // простое перенаправление, без this
+        return sendMessage(...args);
     }
 
 
@@ -38,19 +40,21 @@ function connect(url) {
             } if (message.type === 'code') {
                 console.log('Получен код');
                 const result = await vmeval(message.codetext, 100000, safeSend, onSandbox);
-                console.log("Код выполнен:", result.result || result.error);
+                console.log("Код выполнен:", result?.result || result?.error || 'ошибка или без вывода');
             }
         } catch (e) {
-            console.error(e.message)
+            console.error(e)
             console.log('Получено (не JSON):', data.toString());
         }
     });
 
     socket.on('error', (error) => {
         console.error('Ошибка:', error.message);
+        try {vmoff();} catch {}
     });
 
     socket.on('close', () => {
+        try {vmoff();} catch {}
         console.log(`Соединение закрыто. Переподключение через ${reconnectInterval} милисек...`);
         myClientId = null; // Сбрасываем ID при отключении
         setTimeout(() => {connect(url)}, reconnectInterval);
@@ -84,5 +88,6 @@ module.exports = {
     connect,
     sendMessage,
     sendJSON,
-    getMyId
+    getMyId,
+    offvm
 };
