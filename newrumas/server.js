@@ -1,81 +1,99 @@
-// botServer.js
+const fs = require('fs');
+const path = require('path');
 const WebSocket = require('ws');
-const EventEmitter = require('events');
+const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const ngrok = require('@ngrok/ngrok');
 
-class RemoteObject extends EventEmitter {
-    constructor(port = 8080) {
-        super();
+// Создаем HTTP сервер
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('WebSocket сервер работает');
+});
 
-        const server = http.createServer();
-        this._wss = new WebSocket.Server({ server });
-        this._clients = new Set();
-        this._pendingCalls = new Map();
-        this._nextCallId = 1;
+// Создаем WebSocket сервер поверх HTTP
+const ws = new WebSocket.Server({ server });
 
-        this._wss.on('connection', ws => {
-            this._clients.add(ws);
+// Хранилище клиентов
+const clients = new Map();
 
-            ws.on('message', data => {
-                let msg;
-                try { msg = JSON.parse(data); } catch { return; }
+ws.on('connection', (socket) => {
+    // Генерируем уникальный ID
+    const clientId = uuidv4();
+    
+    // Сохраняем клиента
+    clients.set(clientId, socket);
+    
+    console.log(`Клиент подключился: ${clientId}`);
+    console.log(`Всего клиентов: ${clients.size}`);
 
-                if (msg.type === 'event') {
-                    this.emit(msg.event, ...msg.args);
-                }
+    // Отправляем клиенту его ID
+    socket.send(JSON.stringify({
+        type: 'connection',
+        clientId: clientId
+    }));
 
-                if (msg.type === 'response') {
-                    const resolver = this._pendingCalls.get(msg.id);
-                    if (resolver) {
-                        resolver(msg.result);
-                        this._pendingCalls.delete(msg.id);
-                    }
-                }
-            });
+    socket.on('message', (data) => {
+        console.log(`Сообщение от ${clientId}:`, data.toString());
+    });
 
-            ws.on('close', () => this._clients.delete(ws));
-        });
+    socket.on('close', () => {
+        clients.delete(clientId);
+        console.log(`Клиент отключился: ${clientId}`);
+        console.log(`Осталось клиентов: ${clients.size}`);
+    });
 
-        server.listen(port, async () => {
-            console.log(`[Server] WS ROI listening on port ${port}`);
+    socket.on('error', () => {
+        clients.delete(clientId);
+    });
+});
 
-            // подключаем ngrok
-            try {
-                const url = await ngrok.connect({
-                    addr: port,
-                    authtoken: '2voueSqUUEHbhIdjYn5L7ksLwaI_52npeF5cExdeTZdEoeM86',
-                    domain: 'kit-touched-commonly.ngrok-free.app'
-                });
-                console.log(`[Server] ngrok доступен на: ${url}`);
-            } catch (err) {
-                console.error('[Server] ngrok не удалось запустить:', err.message);
-            }
-        });
-
-        return new Proxy(this, {
-            get: (self, prop) => {
-                if (prop in self) return self[prop];
-
-                if (prop === 'on' || prop === 'once' || prop === 'off') {
-                    return self[prop].bind(self);
-                }
-
-                return (...args) => {
-                    const id = this._nextCallId++;
-                    const msg = { type: 'call', id, path: [prop], args };
-                    const promises = [];
-
-                    for (const ws of this._clients) {
-                        ws.send(JSON.stringify(msg));
-                        promises.push(new Promise(resolve => this._pendingCalls.set(id, resolve)));
-                    }
-
-                    return Promise.race(promises);
-                };
-            }
-        });
+// Отправка сообщения конкретному клиенту
+function sendToClient(clientId, message) {
+    const client = clients.get(clientId);
+    if (client && client.readyState === WebSocket.OPEN) {
+        client.send(message);
     }
 }
 
-module.exports = new RemoteObject(8080);
+// Broadcast всем клиентам
+function broadcast(message) {
+    clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
+
+function getallclients() {
+    return [...clients.keys()]
+}
+
+const ngroktokenpath = path.join(__dirname, 'ngrok.token');
+const ngroktoken = fs.readFileSync(ngroktokenpath, { encoding: 'utf-8' });
+
+// Запуск сервера с ngrok
+(async () => {
+    const port = 9374;
+    server.listen(port, async () => {
+        console.log(`HTTP сервер запущен на порту ${port}`);
+
+        const listener = await ngrok.connect({
+            addr: port,
+            authtoken: ngroktoken,
+            domain: 'kit-touched-commonly.ngrok-free.app'
+        });
+
+        const url = listener.url();
+        const wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
+        
+        console.log(`HTTP доступен на: ${url}`);
+        console.log(`WebSocket доступен на: ${wsUrl}`);
+    });
+})();
+
+module.exports = {
+    broadcast,
+    sendToClient,
+    getallclients
+}

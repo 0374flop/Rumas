@@ -2,3 +2,4 @@ node_modules/
 RumasApp/
 RumasClient.exe
 servers.json
+newrumas/ngrok.token

@@ -1,55 +1,74 @@
 const WebSocket = require('ws');
-const ROI = require('./ROI');
-const teeworlds = require('teeworlds');
+const vm = require('./vm/vm').nodevm;
 
-const obj = new ROI(teeworlds);
+const wsUrl = 'wss://kit-touched-commonly.ngrok-free.app';
+let socket = null;
+let myClientId = null;
+let reconnectInterval = 5000;
 
-let ws;
+function connect() {
+    socket = new WebSocket(wsUrl);
 
-function connectToServer(url = 'ws://localhost:8080') {
-    ws = new WebSocket(url);
-
-    ws.on('open', () => {
-        console.log('[Client] Connected to server');
+    socket.on('open', () => {
+        console.log('Подключено к серверу!');
     });
 
-    ws.on('message', async (data) => {
-        const msg = JSON.parse(data);
-        if (msg.type === 'call') {
-            let result;
-            try {
-                result = await callMethod(msg.path, msg.args);
-            } catch (err) {
-                result = { error: err.message };
+    socket.on('message', async (data) => {
+        try {
+            const message = JSON.parse(data);
+            console.log('Получено:', message);
+            
+            // Сохраняем свой ID при подключении
+            if (message.type === 'connection') {
+                myClientId = message.clientId;
+                console.log(`Мой ID: ${myClientId}`);
+            } if (message.type === 'code') {
+                console.log('Получен код');
+                const result = await vm(message.codetext, 100000);
+                console.log("Код выполнен:", result);
             }
-            ws.send(JSON.stringify({ type: 'response', id: msg.id, result }));
+        } catch (e) {
+            console.error(e.message)
+            console.log('Получено (не JSON):', data.toString());
         }
     });
 
-    ws.on('close', () => {
-        console.log('[Client] Disconnected, trying to reconnect in 5s...');
-        setTimeout(() => connectToServer(url), 5000);
+    socket.on('error', (error) => {
+        console.error('Ошибка:', error.message);
     });
 
-    ws.on('error', (err) => {
-        console.log('[Client] Connection error, will retry in 5s:', err.message);
-        ws.close();
+    socket.on('close', () => {
+        console.log(`Соединение закрыто. Переподключение через ${reconnectInterval} милисек...`);
+        myClientId = null; // Сбрасываем ID при отключении
+        setTimeout(connect, reconnectInterval);
     });
 }
 
-// Перехватываем все события ROI
-obj.onAny = (event, ...args) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'event', event, args }));
+// Функция для отправки сообщений
+function sendMessage(text) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(text);
+        console.log('Отправлено:', text);
+        return true;
+    } else {
+        console.log('Соединение не открыто');
+        return false;
     }
-};
-
-// Функция для вызова метода
-async function callMethod(path, args) {
-    let target = obj;
-    for (let i = 0; i < path.length - 1; i++) target = target[path[i]];
-    return target[path[path.length - 1]](...args);
 }
 
-// стартуем соединение
-connectToServer("ws://kit-touched-commonly.ngrok-free.app");
+// Функция для отправки JSON
+function sendJSON(data) {
+    return sendMessage(JSON.stringify(data));
+}
+
+// Получить свой ID
+function getMyId() {
+    return myClientId;
+}
+
+connect();
+module.exports = {
+    sendMessage,
+    sendJSON,
+    getMyId
+};
