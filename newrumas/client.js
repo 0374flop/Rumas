@@ -1,7 +1,8 @@
 const WebSocket = require('ws');
-const vm = require('./vm/vm').nodevm;
+const vm = require('./vm/vm');
+const vmeval = vm.quickjsvm.evalinsandbox;
 
-const wsUrl = 'wss://kit-touched-commonly.ngrok-free.app';
+let wsUrl = 'wss://kit-touched-commonly.ngrok-free.app';
 let socket = null;
 let myClientId = null;
 let reconnectInterval = 5000;
@@ -24,8 +25,8 @@ function connect() {
                 console.log(`Мой ID: ${myClientId}`);
             } if (message.type === 'code') {
                 console.log('Получен код');
-                const result = await vm(message.codetext, 100000);
-                console.log("Код выполнен:", result);
+                const result = await vmeval(message.codetext, 100000, sendMessage);
+                console.log("Код выполнен:", result.result || result.error);
             }
         } catch (e) {
             console.error(e.message)
@@ -66,8 +67,9 @@ function getMyId() {
     return myClientId;
 }
 
-connect();
+// connect();
 module.exports = {
+    connect,
     sendMessage,
     sendJSON,
     getMyId

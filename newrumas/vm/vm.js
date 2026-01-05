@@ -1,5 +1,5 @@
-const quickjsvm = require('./quickjs-vm').evalinsandbox;
-const nodevm = require('./node-vm').evalinsandbox;
+const quickjsvm = require('./quickjs-vm');
+const nodevm = require('./node-vm');
 
 module.exports = {
     nodevm,

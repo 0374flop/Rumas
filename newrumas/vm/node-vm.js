@@ -1,7 +1,7 @@
 const vm = require('vm');
-const { bot, teeworlds } = require('./bot');
+const Obj = require('./Obj');
 
-function createSecureSandbox() {
+function init(send, on) {
     // Создаем полностью пустой объект без прототипа
     const sandbox = Object.create(null);
     
@@ -12,8 +12,17 @@ function createSecureSandbox() {
         warn: (...args) => console.warn('[SANDBOX]', ...args),
     };
 
-    sandbox.teeworlds = teeworlds;
-    sandbox.bot = bot;
+    sandbox.send = (...args) => {
+        const cloned = structuredClone(args);
+        return send(...cloned);
+    };
+
+    sandbox.on = (...args) => {
+        const cloned = structuredClone(args);
+        return on(...cloned);
+    };
+
+    sandbox.Obj = Obj;
     
     // Базовые конструкторы (без доступа к их прототипам)
     sandbox.Array = Array;
@@ -40,11 +49,10 @@ function createSecureSandbox() {
     return sandbox;
 }
 
-async function evalinsandbox(code, timeout = 5000) {
-    console.log('Код выполняется в безопасной среде...');
+async function evalinsandbox(code, timeout = 5000, send, on) {
     
     try {
-        const sandbox = createSecureSandbox();
+        const sandbox = init(send, on);
         
         // Создаем контекст с отключенной генерацией кода
         const context = vm.createContext(sandbox, {
