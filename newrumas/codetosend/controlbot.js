@@ -1,6 +1,7 @@
 // const { bot } = require("ddbot.js-0374");
 
 async function main() {
+    console.log(JSON.stringify(CData));
 
     const identitybot = {
         name: "Towa",
@@ -26,7 +27,7 @@ async function main() {
     async function exit() {
         await Obj.bot.bot.disconnectAllBots(); // отключаем всех ботов
         Obj.bot.bot.removeAllListeners();
-        console.log('БОТА ОТКЛЮЧИЛО')
+        console.log('БОТА ОТКЛЮЧИЛО');
         exitforvm();
     }
 

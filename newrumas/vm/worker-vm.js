@@ -258,3 +258,5 @@ async function evalinsandbox(code, timeout = 5000, send, on, data) {
 }
 
 module.exports = { evalinsandbox, offvm };
+
+// етот мусор не работает
