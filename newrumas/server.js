@@ -48,6 +48,12 @@ class RServer extends EventEmiter{
         }
     }
 
+    sendexitbot(clientId) {
+        this.sendToClient(clientId, JSON.stringify({
+            type: 'exitbot'
+        }))
+    }
+
     broadcast(message) {
         this.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {

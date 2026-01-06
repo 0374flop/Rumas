@@ -54,7 +54,7 @@ function offvm() {
 async function evalinsandbox(code, timeout = 5000, send, on, data) {
     
     try {
-        sandbox1 = init(send, on, (message) => {
+        sandbox1 = init(send, on, (message = 'пусто') => {
             throw new Error(`__EXIT MSG: ${message}__`)
         });
         
@@ -71,14 +71,15 @@ async function evalinsandbox(code, timeout = 5000, send, on, data) {
             'use strict';
             (async () => {
                 try {
-                    const CData = ${data}
+                    const CData = ${JSON.stringify(data)}
                     ${code}
                 } catch(e) {
                     if(e.message.startsWith('__EXIT MSG:')) {
-                        try {exit();} catch {}
+                        try {await exit();} catch {}
+                        console.log(e.message);
                         return;
                     }
-                    throw e;
+                    // throw e;
                 }
             })();
         `, {

@@ -10,7 +10,8 @@ class ngrok {
         this.urlhttp = '';
         this.urlws = '';
         server.listen(port, async () => {
-            console.log(`HTTP сервер запущен на порту ${port}`);
+            console.log(`HTTP сервер запущен на порту ${port}, http://localhost:${port}`);
+
 
             const listener = await ngrokmodule.connect({
                 addr: port,

@@ -1,9 +1,8 @@
-const { offvm } = require('./client');
 const { Rumas } = require('./index');
 
-Rumas.Client.connect('wss://kit-touched-commonly.ngrok-free.app');
+Rumas.Client.connect('ws://localhost:1243'); // kit-touched-commonly.ngrok-free.app
 
 process.on('SIGINT', () => {
-    try {offvm();} catch {}
+    try {Rumas.Client.vmoff();} catch {}
     process.exit()
 })

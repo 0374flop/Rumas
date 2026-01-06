@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const vm = require('./vm/vm');
-const { offvm } = require('./vm/node-vm');
 const vmeval = vm.nodevm.evalinsandbox;
 const vmoff = vm.nodevm.offvm;
 
@@ -40,7 +39,7 @@ function connect(url) {
             } if (message.type === 'code') {
                 console.log('Получен код');
                 const result = await vmeval(message.codetext, 100000, safeSend, onSandbox, message.data4code);
-                console.log("Код выполнен:", result?.result || result?.error || 'ошибка или без вывода');
+                console.log("Код выполнен:", result?.result || result?.error || result || 'ошибка или без вывода');
             }
         } catch (e) {
             console.error(e)
@@ -89,5 +88,5 @@ module.exports = {
     sendMessage,
     sendJSON,
     getMyId,
-    offvm
+    vmoff
 };

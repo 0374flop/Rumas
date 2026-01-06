@@ -12,7 +12,7 @@ async function main() {
         country: 804
     };
 
-    const botName = await Obj.bot.bot.createBot(CData.adrsess, 'Towa', {
+    const botName = await Obj.bot.bot.createBot(CData.address, 'Towa', {
         identity: identitybot,
         reconnect: true,
         reconnectAttempts: -1,
@@ -23,30 +23,11 @@ async function main() {
 
     const botClient = Obj.bot.bot.getBotClient(botName); // получаем оригинальный клиент teeworlds
 
-    // Подписка на событие подключения
-    Obj.bot.bot.on(`${botName}:connect`, () => {
-        let timemsg = 0; // время
-
-        // подписка на чат
-        Obj.bot.bot.on(`${botName}:ChatNoSystem`, (msgraw, autormsg, text, team, client_id) => {
-            console.log(`${client_id} ${team} '${autormsg}' : ${text}`); // вывод чата в консоль
-            if (text == 'exit') exit(); // выход
-
-            // Эхо-логика
-            if (Date.now() - timemsg > 6000) {
-                timemsg = Date.now(); // устанавливаем текущее время
-                if (text && autormsg) {
-                    botClient.game.Say(`${autormsg}: ${text}`); // отправка сообения (teeworlds)
-                }
-            }
-        });
-    });
-
-    // Выход через Ctrl+C
     async function exit() {
-        await bot.bot.disconnectAllBots(); // отключаем всех ботов
+        await Obj.bot.bot.disconnectAllBots(); // отключаем всех ботов
         Obj.bot.bot.removeAllListeners();
-        exitforvm()
+        console.log('БОТА ОТКЛЮЧИЛО')
+        exitforvm();
     }
 
     on((message) => {
