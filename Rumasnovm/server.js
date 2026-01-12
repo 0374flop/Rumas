@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const EventEmitter = require('events');
 
-const { ServerRPC } = require('./RumasRPC/RPC');
+const { ServerRPC, createRPCProxy } = require('./RumasRPC/RPC');
 const { ngrok } = require('./ngrok');
 
 class RServer extends EventEmitter {
@@ -124,4 +124,4 @@ class RServer extends EventEmitter {
     }
 }
 
-module.exports = RServer;
+module.exports = { RServer, createRPCProxy };
