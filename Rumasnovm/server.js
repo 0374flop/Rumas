@@ -72,12 +72,13 @@ class RServer extends EventEmitter {
             this.emit('connect', clientId, rpcServer);
         });
         
-        // ВАЖНО: Запускаем сервер
+        if (usengrok) {
+this.ngrok = new ngrok(port, undefined, undefined, server);
+} else {
         server.listen(port, () => {
             console.log(`RServer запущен на порту ${port}`);
         });
-        
-        if (usengrok) this.ngrok = new ngrok(port, undefined, undefined, server);
+}
     }
 
     // Получить RPC сервер для клиента
@@ -122,6 +123,16 @@ class RServer extends EventEmitter {
         if (!rpc) throw new Error(`Client ${clientId} not found`);
         return await rpc.get('bot', property);
     }
+
+broadcastMethod(objectName, method, args = []) {
+    this.rpcServers.forEach(async (rpc, clientId) => {
+        try {
+            await rpc.call(objectName, method, args);
+        } catch(e) {
+            console.error(`Ошибка на клиенте ${clientId}:`, e);
+        }
+    });
+}
 }
 
 module.exports = { RServer, createRPCProxy };

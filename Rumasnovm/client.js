@@ -38,7 +38,9 @@ const testBot = {
     class: new MyObject()
 };
 
-function connect(url) {
+function connect(url, interval) {
+if (interval) reconnectInterval = interval;
+
     socket = new WebSocket(url);
 
     client = new ClientRPC(

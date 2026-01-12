@@ -1,6 +1,6 @@
 const { RServer, createRPCProxy } = require('./server');
 
-const server = new RServer(3000);
+const server = new RServer(3000, true);
 
 server.on('connect', async (clientId, rpcServer) => {
     console.log('Новый клиент, тестируем RPC...');
