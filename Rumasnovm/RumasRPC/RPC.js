@@ -21,7 +21,7 @@ class ClientRPC {
                         event: {
                             path: basePath,
                             name: event,
-                            data: args.length === 1 ? args[0] : args
+                            data: args
                         }
                     }));
                 };
@@ -168,21 +168,19 @@ class ServerRPC {
 function createRPCProxy(rpc, serviceName = 'bot') {
     return new Proxy({}, {
         get(target, prop, receiver) {
-            // Пропускаем всякие внутренние штуки Proxy
             if (typeof prop === 'symbol') return Reflect.get(target, prop, receiver);
-
-            // Специальные случаи
             if (prop === 'toString') return () => `[RPC Proxy: ${serviceName}]`;
-            if (prop === 'then') return undefined; // чтобы не ломать await
+            if (prop === 'then') return undefined;
 
-            // Всё остальное — это вызов метода
-            return async function (...args) {
-                try {
-                    const response = await rpc.call(serviceName, prop, args);
-                    return response;
-                } catch (err) {
-                    console.error(`RPC error ${serviceName}.${prop}():`, err.message);
-                    throw err;
+            // Возвращаем объект с двумя методами
+            return {
+                // Для геттеров/свойств
+                get: async () => {
+                    return await rpc.get(serviceName, prop);
+                },
+                // Для методов
+                call: async (...args) => {
+                    return await rpc.call(serviceName, prop, args);
                 }
             };
         }

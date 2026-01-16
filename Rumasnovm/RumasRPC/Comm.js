@@ -4,12 +4,16 @@ class Comm extends EventEmitter {
     constructor(sendraw, onDataraw, onTransportErr, onTransportDisconnect, maxtimePING = 5000, startPing = false, maxchars = 1000) {
         super();
 
+		const anyF = (callback) => {
+			callback(1234);
+		};
+
 		// опции, неизменные
         this.options = {
-            sendraw: typeof sendraw === 'function' ? sendraw : console.log,
-            onDataraw: typeof onDataraw === 'function' ? onDataraw : console.log,
-			onTransportErr: typeof onTransportErr === 'function' ? onTransportErr : console.log,
-			onTransportDisconnect: typeof onTransportDisconnect === 'function' ? onTransportDisconnect : console.log,
+            sendraw: typeof sendraw === 'function' ? sendraw : anyF,
+            onDataraw: typeof onDataraw === 'function' ? onDataraw : anyF,
+			onTransportErr: typeof onTransportErr === 'function' ? onTransportErr : anyF,
+			onTransportDisconnect: typeof onTransportDisconnect === 'function' ? onTransportDisconnect : anyF,
 			maxtimePING: typeof maxtimePING === 'number' ? maxtimePING : 5000,
 			startPing: typeof startPing === 'number' ? startPing : false
         };

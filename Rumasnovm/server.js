@@ -73,15 +73,14 @@ class RServer extends EventEmitter {
         });
         
         if (usengrok) {
-this.ngrok = new ngrok(port, undefined, undefined, server);
-} else {
-        server.listen(port, () => {
-            console.log(`RServer запущен на порту ${port}`);
-        });
-}
+            this.ngrok = new ngrok(port, undefined, undefined, server);
+        } else {
+            server.listen(port, () => {
+                console.log(`RServer запущен на порту ${port}`);
+            });
+        }
     }
 
-    // Получить RPC сервер для клиента
     getRPC(clientId) {
         return this.rpcServers.get(clientId);
     }
@@ -111,28 +110,27 @@ this.ngrok = new ngrok(port, undefined, undefined, server);
         return [...this.clients.keys()];
     }
 
-    // Теперь можно вызывать методы через RPC
-    async callBot(clientId, method, args = []) {
-        const rpc = this.rpcServers.get(clientId);
-        if (!rpc) throw new Error(`Client ${clientId} not found`);
-        return await rpc.call('bot', method, args);
-    }
-    
     async getBotProperty(clientId, property) {
         const rpc = this.rpcServers.get(clientId);
         if (!rpc) throw new Error(`Client ${clientId} not found`);
         return await rpc.get('bot', property);
     }
 
-broadcastMethod(objectName, method, args = []) {
-    this.rpcServers.forEach(async (rpc, clientId) => {
-        try {
-            await rpc.call(objectName, method, args);
-        } catch(e) {
-            console.error(`Ошибка на клиенте ${clientId}:`, e);
-        }
-    });
-}
+    broadcastMetod(objectName, method, args = []) {
+        this.rpcServers.forEach(async (rpc, clientId) => {
+            try {
+                await rpc.call(objectName, method, args);
+            } catch(e) {
+                console.error(`Ошибка на клиенте ${clientId}:`, e);
+            }
+        });
+    }
+
+    call(clientId, objectName, method, args = []) {
+        const rpc = this.rpcServers.get(clientId);
+        if (!rpc) throw new Error(`Client ${clientId} not found`);
+        return rpc.call(objectName, method, args);
+    }
 }
 
 module.exports = { RServer, createRPCProxy };

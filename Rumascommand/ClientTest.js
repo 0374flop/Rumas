@@ -1,7 +1,5 @@
 const RClient = require('./client');
 
-RClient.connect('ws://localhost:3000', 1000);
-
 RClient.events.on('connected', (clientId) => {
     console.log('Подключено к серверу! Мой ID:', clientId);
 });
@@ -11,5 +9,9 @@ RClient.events.on('disconnected', (reconnectInterval) => {
 });
 
 RClient.events.on('error', (error) => {
-    console.error('Ошибка:', error.message);
+    if (error.code === 'ECONNREFUSED') return;
+    console.error('Ошибка:', error);
 });
+
+
+RClient.connect('ws://localhost:3000', 10000);

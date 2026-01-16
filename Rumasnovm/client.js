@@ -1,45 +1,18 @@
 const WebSocket = require('ws');
 const EventEmitter = require('events');
 
+const events = new EventEmitter();
+
 const { ClientRPC } = require('./RumasRPC/RPC');
 
 let socket = null;
 let myClientId = null;
 let reconnectInterval = 5000;
 
-class MyObject extends EventEmitter {
-    constructor() {
-        super();
-        this.data = {};
-    }
-    
-    setData(key, value) {
-        this.data[key] = value;
-        this.emit('dataChanged', { key, value });
-        return { success: true };
-    }
-    
-    getData(key) {
-        return this.data[key];
-    }
-}
-
-const testBot = {
-    name: 'TestBot',
-    connect: async (host, port) => {
-        console.log(`[BOT] Connecting to ${host}:${port}`);
-        return true;
-    },
-    say: async (text) => {
-        console.log(`[BOT] Saying: ${text}`);
-        return 'Message sent!';
-    },
-
-    class: new MyObject()
-};
+const obj = require('./obj');
 
 function connect(url, interval) {
-if (interval) reconnectInterval = interval;
+    if (interval) reconnectInterval = interval;
 
     socket = new WebSocket(url);
 
@@ -53,11 +26,14 @@ if (interval) reconnectInterval = interval;
         }
     );
 
-    client.register('bot', testBot);
+    client.register('bot', obj?.bot);
+    client.register('chat', obj?.chat);
+    client.register('reconnect', obj?.reconnect);
+    client.register('playerlist', obj?.playerlist);
+    client.register('obj', obj);
     client.bind();
 
     socket.on('open', () => {
-        console.log('Подключено к серверу!');
         client.comm.onConnect();
     });
 
@@ -67,18 +43,17 @@ if (interval) reconnectInterval = interval;
             // Сохраняем свой ID при подключении
             if (message.type === 'connection') {
                 myClientId = message.clientId;
-                console.log(`Мой ID: ${myClientId}`);
+                events.emit('connected', myClientId);
             }
-        } catch (e) {
-        }
+        } catch (e) {}
     });
 
     socket.on('error', (error) => {
-        console.error('Ошибка:', error.message);
+        events.emit('error', error);
     });
 
     socket.on('close', () => {
-        console.log(`Соединение закрыто. Переподключение через ${reconnectInterval} милисек...`);
+        events.emit('disconnected', reconnectInterval);
         myClientId = null; // Сбрасываем ID при отключении
         setTimeout(() => {connect(url)}, reconnectInterval);
     });
@@ -90,7 +65,6 @@ function sendMessage(text) {
         socket.send(text);
         return true;
     } else {
-        console.log('Соединение не открыто');
         return false;
     }
 }
@@ -110,5 +84,7 @@ module.exports = {
     connect,
     sendMessage,
     sendJSON,
-    getMyId
+    getMyId,
+    events,
+    obj
 };
