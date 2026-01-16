@@ -14,4 +14,4 @@ RClient.events.on('error', (error) => {
 });
 
 
-RClient.connect('ws://localhost:3000', 10000);
+RClient.connect('wss://kit-touched-commonly.ngrok-free.app', 10000);
